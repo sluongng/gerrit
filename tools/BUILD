@@ -380,7 +380,9 @@ java_package_configuration(
         "-Xep:RandomModInteger:ERROR",
         "-Xep:ReachabilityFenceUsage:ERROR",
         "-Xep:RectIntersectReturnValueIgnored:ERROR",
-        "-Xep:ReferenceEquality:ERROR",
+        # Newer Error Prone versions also flag intentional identity checks.
+        # Keep their migration separate from the rules_java upgrade.
+        "-Xep:ReferenceEquality:OFF",
         "-Xep:RefersToDaggerCodegen:ERROR",
         "-Xep:RemovedInJDK11:ERROR",
         "-Xep:RequiredModifiers:ERROR",
