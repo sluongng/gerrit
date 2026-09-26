@@ -886,20 +886,94 @@ bazelisk test --config=remote \
 ```
 
 
-== BuildBuddy Remote Build Support
+== BuildBuddy reporting, caching and remote execution
 
-To utilize the BuildBuddy Remote Build Execution service, please consult the
-documentation available at the following link: https://www.buildbuddy.io[BuildBuddy].
+These optional profiles use link:https://www.buildbuddy.io[BuildBuddy] with
+Bazelisk and the Bazel version in `.bazelversion`. Ordinary commands without
+these profiles still build locally.
 
-To use RBE, execute
+[cols="1,3",options="header"]
+|===
+|Profile |Behavior
+|`reporting_bb` |Publish build events; keep execution and platforms local.
+|`cache_bb` |Add a remote cache; cache misses execute locally.
+|`remote_bb` |Add remote execution on `//tools/remote:platform`.
+|===
+
+Profiles are defined with `common` so commands such as `query` can select
+the same configuration names. Bazel ignores common options that the command
+does not support. BuildBuddy event publishing remains build-scoped; `run`,
+`query`, `aquery` and `cquery` do not publish invocations by default, even when
+a BuildBuddy profile is selected. To explicitly publish one of these commands,
+pass both `--bes_backend=grpcs://remote.buildbuddy.io` and
+`--bes_results_url=https://app.buildbuddy.io/invocation/` after the profile
+selection so Bazel also prints the invocation URL.
+Remote execution and cache settings remain available independently of BES.
+
+Select one mode per command. Reporting and cache modes preserve the local
+PATH, platforms and disk cache. They do not undo a remote profile selected
+elsewhere in your rc files. Local and remote toolchains can produce different
+action keys; cache sharing requires matching action inputs and environments.
+
+=== Authentication
+
+Create a private `user.bazelrc` in the checkout root. It is ignored by Git and
+imported by `.bazelrc`. Restrict access before adding credentials:
 
 ```
-bazelisk test --config=remote_bb \
-    --remote_instance_name=projects/${PROJECT}/instances/default_instance \
-    --remote_header=x-buildbuddy-api-key=YOUR_API_KEY \
-    javatests/...
+(umask 077; touch user.bazelrc)
+chmod 600 user.bazelrc
 ```
 
+Add the following, replacing `YOUR_API_KEY` with a key authorized for the
+selected BuildBuddy services. Do not put the key in tracked files or shell
+command arguments. See the
+link:https://www.buildbuddy.io/docs/guide-auth/[authentication guide].
+
+```
+common:reporting_bb --bes_header=x-buildbuddy-api-key=YOUR_API_KEY
+common:cache_bb --remote_header=x-buildbuddy-api-key=YOUR_API_KEY
+common:reporting_bb --noannounce_rc
+```
+
+The RBE aliases inherit both profiles. No Google credentials or GCP project
+name is required. If your team uses a cache namespace, add
+`common:cache_bb --remote_instance_name=gerrit-dev` to this private file and use
+the same namespace on collaborating clients. The namespace is not an access
+control boundary.
+
+=== Build and test
+
+For a small Git test, choose one mode:
+
+```
+bazelisk test --config=reporting_bb //javatests/com/google/gerrit/git:small_tests
+bazelisk test --config=cache_bb //javatests/com/google/gerrit/git:small_tests
+bazelisk test --config=remote_bb //javatests/com/google/gerrit/git:small_tests
+```
+
+`remote_bb` and `remote25_bb` use Java 25. Use `remote21_bb` for Java 21;
+local reporting/cache commands can instead add `--config=java21`.
+The Google `remote`, `remote_gcp`, `remote21[_gcp]` and `remote25[_gcp]`
+aliases remain available.
+
+To require test execution instead of accepting a cached test result, use one
+attempt and disable test-result caching:
+
+```
+bazelisk test --config=remote_bb --cache_test_results=no --flaky_test_attempts=1 \
+    //javatests/com/google/gerrit/acceptance/git:GitOverHttpServletIT
+```
+
+The broader Git acceptance selection is
+`//javatests/com/google/gerrit/acceptance/git/...`. Report any exclusions,
+failures and Java variant when sharing results. Repeat without
+`--cache_test_results=no` to measure normal reuse; a cached pass does not prove
+that the tests executed during that invocation.
+
+For local debugging, omit the remote profile and use `--java_debug` with a
+single test target (see the debugging section above). Reporting remains
+optional; it does not send the test process to a remote executor.
 
 GERRIT
 ------
