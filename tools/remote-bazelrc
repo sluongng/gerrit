@@ -20,11 +20,14 @@
 # for a remote machine to execute them.
 common:remote_shared --jobs=200
 common:remote_shared --disk_cache=
-common:remote_shared --remote_download_minimal
+common:remote_shared --remote_download_outputs=toplevel
 
 # Do not inherit a client-specific PATH into remote action keys. These paths
 # are available in the image pinned by //tools/remote:platform.
 common:remote_shared --action_env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Select after the remote profile for CI jobs that do not consume build outputs.
+common:remote_minimal --remote_download_outputs=minimal
 
 # Set several flags related to specifying the platform, toolchain and java
 # properties.

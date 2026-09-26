@@ -968,6 +968,18 @@ failures and Java variant when sharing results. Repeat without
 `--cache_test_results=no` to measure normal reuse; a cached pass does not prove
 that the tests executed during that invocation.
 
+Developer remote profiles download top-level outputs, including requested WAR
+and documentation archives:
+
+```
+bazelisk build --config=remote_bb //:gerrit //Documentation:searchfree
+ls bazel-bin/gerrit.war bazel-bin/Documentation/searchfree.zip
+```
+
+For CI jobs that only need test results, select `--config=remote_minimal`
+after the remote profile. This skips unneeded output downloads. Jobs that
+package or consume artifacts should retain the default top-level downloads.
+
 For local debugging, omit the remote profile and use `--java_debug` with a
 single test target (see the debugging section above). Reporting remains
 optional; it does not send the test process to a remote executor.
