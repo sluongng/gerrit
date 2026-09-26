@@ -7,6 +7,8 @@ bazel_dep(name = "com_googlesource_gerrit_bazlets")
 git_override(
     module_name = "com_googlesource_gerrit_bazlets",
     commit = "d26439932150d87b3a8f56309a14d9ead2526c33",
+    patches = ["//tools:bazlets-reproducible-plugin.patch"],
+    patch_strip = 1,
     remote = "https://gerrit.googlesource.com/bazlets",
 )
 
