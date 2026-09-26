@@ -22,6 +22,10 @@ common:remote_shared --jobs=200
 common:remote_shared --disk_cache=
 common:remote_shared --remote_download_minimal
 
+# Do not inherit a client-specific PATH into remote action keys. These paths
+# are available in the image pinned by //tools/remote:platform.
+common:remote_shared --action_env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 # Set several flags related to specifying the platform, toolchain and java
 # properties.
 common:remote_shared --extra_execution_platforms=//tools/remote:platform

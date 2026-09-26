@@ -853,23 +853,9 @@ gcloud alpha remote-build-execution worker-pools create default \
     --disk-size=200
 ```
 
-Note, that we are using Ubuntu2404 docker image from bazel project:
-
-
-```
-docker pull gcr.io/bazel-public/ubuntu2404@sha256:a5e969f2208ae4ab3cbe18cd85971f1f602345a650495674736a66b3ef9a55d1
-```
-
-Re-build rbe_autoconfig project, conduct a new release and switch to using it
-in `MODULE.bazel` file. For more details see this
-link:https://github.com/davido/rbe_autoconfig[repository,role=external,window=_blank]
-
-Note, to authenticate to the gcr.io registry, the following command must be
-used:
-
-```
-gcloud auth configure-docker
-```
+The Linux x86-64 execution platform and its digest-pinned Ubuntu 24.04
+container image are defined in `tools/remote/BUILD`. Update that platform
+when changing the execution image; no `rbe_autoconfig` release is needed.
 
 To see the documentation, developer must be added to this group:
 https://groups.google.com/forum/#!forum/rbe-alpha-customers.
@@ -912,8 +898,9 @@ Remote execution and cache settings remain available independently of BES.
 
 Select one mode per command. Reporting and cache modes preserve the local
 PATH, platforms and disk cache. They do not undo a remote profile selected
-elsewhere in your rc files. Local and remote toolchains can produce different
-action keys; cache sharing requires matching action inputs and environments.
+elsewhere in your rc files. Remote profiles use a fixed container PATH instead
+of the client's PATH. Local and remote toolchains can produce different action
+keys; cache sharing requires matching action inputs and environments.
 
 === Authentication
 
