@@ -82,3 +82,11 @@ common:cache_bb --remote_cache_compression
 common:config_bb --config=remote_shared
 common:config_bb --config=cache_bb
 common:config_bb --remote_executor=grpcs://remote.buildbuddy.io
+
+# Opt-in local diagnostics. Override both paths for concurrent invocations.
+common:diagnostics --execution_log_compact_file=bazel-execution.log
+common:diagnostics --profile=bazel-profile.json.gz
+# Preserve action details for investigations, at the cost of larger profiles.
+common:diagnostics --experimental_profile_include_target_label
+common:diagnostics --experimental_profile_include_primary_output
+common:diagnostics --noslim_profile

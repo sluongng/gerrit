@@ -984,6 +984,33 @@ For local debugging, omit the remote profile and use `--java_debug` with a
 single test target (see the debugging section above). Reporting remains
 optional; it does not send the test process to a remote executor.
 
+=== Diagnostics and sharing
+
+Add `--config=diagnostics` to write `bazel-execution.log` (compact execution
+log) and `bazel-profile.json.gz` (timing profile) in the checkout root. Timing
+profiles include target labels and primary outputs, and retain individual
+events instead of merging them as the profile grows. This can produce larger
+files; the extra detail is only enabled by this profile. For concurrent
+invocations or retained evidence, override both with unique paths:
+
+```
+diag_dir=$(mktemp -d)
+bazelisk test --config=remote_bb --config=diagnostics \
+    --execution_log_compact_file="$diag_dir/execution.log" \
+    --profile="$diag_dir/profile.json.gz" \
+    //javatests/com/google/gerrit/git:small_tests
+```
+
+BuildBuddy prints an invocation URL for each reporting-enabled command. Share
+that URL with collaborators who have access, together with the revision,
+targets, Java variant, exclusions, and whether tests executed or were cached.
+Review logs before sharing them: diagnostics can contain command arguments,
+paths and environment values. Failed test logs are also available under
+`bazel-testlogs/` for the selected target.
+If you separately enable a local build-event JSON file, redact it before
+sharing: it can contain authentication headers even with `--noannounce_rc`.
+
+
 GERRIT
 ------
 Part of link:index.html[Gerrit Code Review]
