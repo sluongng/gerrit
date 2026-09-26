@@ -901,6 +901,9 @@ PATH, platforms and disk cache. They do not undo a remote profile selected
 elsewhere in your rc files. Remote profiles use a fixed container PATH instead
 of the client's PATH. Local and remote toolchains can produce different action
 keys; cache sharing requires matching action inputs and environments.
+The BuildBuddy cache and RBE profiles use zstd-compressed cache transfers.
+A custom endpoint must advertise zstd support. If it does not, add
+`common:cache_bb --noremote_cache_compression` to `user.bazelrc`.
 
 === Authentication
 
